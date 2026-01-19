@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -71,16 +72,28 @@ WSGI_APPLICATION = 'securetrack.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DATABASE_NAME', 'securetrack'),
-        'USER': os.getenv('DATABASE_USER', 'securetrack_user'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'securetrack_pass_dev'),
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-        'PORT': os.getenv('DATABASE_PORT', '5432'),
+# Use SQLite locally (for development), PostgreSQL in Docker/Production
+if os.getenv('USE_SQLITE', 'True') == 'True':
+    # Local development with SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # Production/Docker with PostgreSQL
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DATABASE_NAME', 'securetrack'),
+            'USER': os.getenv('DATABASE_USER', 'securetrack_user'),
+            'PASSWORD': os.getenv('DATABASE_PASSWORD', 'securetrack_pass_dev'),
+            'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+            'PORT': os.getenv('DATABASE_PORT', '5432'),
+        }
+    }
+
 
 
 

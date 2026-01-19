@@ -3,7 +3,7 @@ Django==4.2.8
 Gunicorn==21.2.0
 
 # Database
-psycopg2-binary==2.9.9
+#psycopg2-binary==2.9.9
 
 # Authentification et sécurité
 argon2-cffi==23.1.0
