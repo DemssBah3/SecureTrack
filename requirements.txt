@@ -17,7 +17,7 @@ pytest-cov==4.1.0
 
 # Sécurité (SAST)
 bandit==1.7.5
-safety==2.3.5
+#safety==2.3.5
 
 # Lint et formatage
 flake8==6.1.0
