@@ -1,0 +1,31 @@
+# Django framework
+Django==4.2.8
+Gunicorn==21.2.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# Authentification et sécurité
+argon2-cffi==23.1.0
+pyotp==2.9.0
+django-cors-headers==4.3.1
+
+# Tests
+pytest==7.4.3
+pytest-django==4.7.0
+pytest-cov==4.1.0
+
+# Sécurité (SAST)
+bandit==1.7.5
+safety==2.3.5
+
+# Lint et formatage
+flake8==6.1.0
+black==23.12.1
+isort==5.13.2
+
+# Environnement
+python-dotenv==1.0.0
+
+# Utils
+requests==2.31.0
