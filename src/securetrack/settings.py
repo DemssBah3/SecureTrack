@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -179,3 +180,6 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+# ===== AUTH CUSTOM USER MODEL =====
+AUTH_USER_MODEL = 'auth.User'
