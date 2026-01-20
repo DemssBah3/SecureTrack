@@ -3,9 +3,24 @@ __pycache__/
 *.pyo
 venv/
 env/
+# Environnement
 .env
+.env.local
+.env.*.local
 .DS_Store
 *.log
 db.sqlite3
 /media/
 /staticfiles/
+# Pytest
+.pytest_cache/
+htmlcov/
+.coverage
+*.cover
+coverage.xml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
