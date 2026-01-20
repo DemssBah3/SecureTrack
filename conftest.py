@@ -16,19 +16,15 @@ django.setup()
 
 import pytest
 from django.test import Client
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 @pytest.fixture
 def api_client():
     """
     Fixture pour un client HTTP Django.
-    Utilisable dans les tests pour faire des requêtes.
-    
-    Exemple d'utilisation :
-        def test_health_check(api_client):
-            response = api_client.get('/api/health/')
-            assert response.status_code == 200
     """
     return Client()
 
@@ -37,11 +33,7 @@ def api_client():
 def authenticated_user(db):
     """
     Fixture pour créer un utilisateur authentifié.
-    Le décorateur @pytest.mark.django_db est implicite.
-    
-    Exemple d'utilisation :
-        def test_user_logged_in(authenticated_user, api_client):
-            assert authenticated_user.username == 'testuser'
+    Utilise le User model personnalisé.
     """
     user = User.objects.create_user(
         username='testuser',
