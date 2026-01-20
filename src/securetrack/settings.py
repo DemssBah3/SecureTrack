@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    'accounts',
     'rest_framework',
 ]
 
@@ -182,4 +183,4 @@ LOGGING = {
 }
 
 # ===== AUTH CUSTOM USER MODEL =====
-AUTH_USER_MODEL = 'auth.User'
+AUTH_USER_MODEL = 'accounts.User'
