@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ project.name }} - SecureTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3><i class="fas fa-folder"></i> {{ project.name }}</h3>
+                            <small class="text-muted">Project #{{ project.id }}</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{% url 'tickets:project_edit' project.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <h5>Description</h5>
+                    <p>{{ project.description|default:"No description" }}</p>
+
+                    <hr>
+
+                    <h5>Project Members</h5>
+                    <ul class="list-group">
+                        {% for member in project.members.all %}
+                            <li class="list-group-item">
+                                <i class="fas fa-user-circle"></i> {{ member.username }}
+                                <small class="text-muted">({{ member.email }})</small>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">No members yet</li>
+                        {% endfor %}
+                    </ul>
+
+                    <hr>
+
+                    <h5>Project Tickets</h5>
+                    {% if project.tickets.all %}
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticket in project.tickets.all %}
+                                    <tr>
+                                        <td>{{ ticket.title }}</td>
+                                        <td>
+                                            {% if ticket.status == 'OPEN' %}
+                                                <span class="badge bg-primary">Open</span>
+                                            {% elif ticket.status == 'IN_PROGRESS' %}
+                                                <span class="badge bg-warning">In Progress</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Closed</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if ticket.priority == 'HIGH' %}
+                                                <span class="badge bg-danger">High</span>
+                                            {% elif ticket.priority == 'MEDIUM' %}
+                                                <span class="badge bg-warning">Medium</span>
+                                            {% else %}
+                                                <span class="badge bg-info">Low</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'tickets:ticket_detail' ticket.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted">No tickets yet. <a href="{% url 'tickets:ticket_create' %}">Create one!</a></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Project Info</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Created by:</strong> {{ project.created_by.username }}</p>
+                    <p><strong>Created:</strong> {{ project.created_at|date:"Y-m-d H:i" }}</p>
+                    <p><strong>Members:</strong> {{ project.members.count }}</p>
+                    <p><strong>Tickets:</strong> {{ project.tickets.count }}</p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'tickets:ticket_create' %}" class="btn btn-primary btn-sm w-100 mb-2">
+                        <i class="fas fa-plus"></i> Add Ticket
+                    </a>
+                    <a href="{% url 'tickets:project_list' %}" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

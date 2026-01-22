@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify 2FA - SecureTrack{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="card-header">
+            <h3><i class="fas fa-shield-alt"></i> Verify 2FA</h3>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Enter the 6-digit code from your authenticator app.
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="totp_code" class="form-label">Authenticator Code</label>
+                <input type="text" class="form-control form-control-lg text-center" id="totp_code" name="totp_code" placeholder="000000" maxlength="6" pattern="[0-9]{6}" required autofocus>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 mb-3">
+                <i class="fas fa-check"></i> Verify
+            </button>
+        </form>
+
+        <hr>
+
+        <p class="text-center text-muted">
+            <small>Don't have your authenticator? Use a <a href="#">backup code</a>.</small>
+        </p>
+    </div>
+</div>
+{% endblock %}
