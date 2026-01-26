@@ -1,6 +1,4 @@
 from pathlib import Path
-
-
 import os
 from dotenv import load_dotenv
 
@@ -35,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'csp',  # ✅ NOUVEAU - django-csp
     'core',
     'accounts',
     'rest_framework',
@@ -48,6 +47,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [  # ✅ NOUVEAU - Rate limiting DRF
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour'
+    }
 }
 
 MIDDLEWARE = [
@@ -58,6 +65,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',  # ✅ NOUVEAU - CSP middleware
+    'securetrack.middleware.RateLimitMiddleware',  # ✅ NOUVEAU - Rate limit middleware
 ]
 
 
@@ -66,7 +75,7 @@ ROOT_URLCONF = 'securetrack.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Add this line
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -150,7 +159,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
-# ===== SECURITY SETTINGS (S7+) =====
+# ===== SECURITY SETTINGS (S7 HARDENING) =====
 
 # HTTPS (sera True en production)
 SECURE_SSL_REDIRECT = os.getenv('DEBUG', 'True') != 'True'
@@ -164,37 +173,80 @@ SESSION_COOKIE_SAMESITE = 'Strict'
 CSRF_COOKIE_SAMESITE = 'Strict'
 
 # Headers de sécurité (S7)
-SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0  # 1 year en prod
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG  # ✅ NOUVEAU - HSTS preload
 X_FRAME_OPTIONS = 'DENY'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_OPTIONS = 'nosniff'
 
-# CSP (Content Security Policy) - à resserrer en S7
+# ✅ CSP RESSERRIE (S7) - Enlever 'unsafe-inline'
 SECURE_CONTENT_SECURITY_POLICY = {
     'default-src': ("'self'",),
-    'script-src': ("'self'",),
-    'style-src': ("'self'", "'unsafe-inline'"),
+    'script-src': ("'self'", "cdn.jsdelivr.net"),  # ✅ CDN whitelist
+    'style-src': ("'self'", "cdn.jsdelivr.net", "fonts.googleapis.com"),  # ✅ Enlever unsafe-inline
+    'font-src': ("'self'", "fonts.gstatic.com"),
+    'img-src': ("'self'", "data:", "https:"),
+    'connect-src': ("'self'",),
+    'frame-ancestors': ("'none'",),  # ✅ NOUVEAU - Strict frame policy
+    'base-uri': ("'self'",),  # ✅ NOUVEAU - Prevent base tag injection
+    'form-action': ("'self'",),  # ✅ NOUVEAU - Restrict form submissions
+}
+
+# ✅ NOUVEAU - Referrer Policy
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# ✅ NOUVEAU - Permissions Policy (Feature Policy)
+PERMISSIONS_POLICY = {
+    'geolocation': [],
+    'microphone': [],
+    'camera': [],
+    'payment': [],
 }
 
 # ===== LOGGING (S8+) =====
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': 'debug.log',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
+            'formatter': 'verbose',
+        },
+        'security_file': {  # ✅ NOUVEAU - Security log
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'security.log'),
+            'formatter': 'verbose',
         },
     },
-    'root': {
-        'handlers': ['console', 'file'],
-        'level': 'INFO',
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.security': {  # ✅ NOUVEAU - Security logger
+            'handlers': ['security_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
     },
 }
+
+# ✅ NOUVEAU - Rate limiting settings
+RATE_LIMIT_ATTEMPTS = 5
+RATE_LIMIT_PERIOD = 900  # 15 minutes en secondes
 
 # ===== AUTH CUSTOM USER MODEL =====
 AUTH_USER_MODEL = 'accounts.User'
@@ -213,3 +265,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Error pages
 HANDLER404 = 'core.views.custom_404'
 HANDLER500 = 'core.views.custom_500'
+
+# ✅ NOUVEAU - Create logs directory if it doesn't exist
+import logging.handlers
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
