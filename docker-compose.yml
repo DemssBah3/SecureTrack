@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Service PostgreSQL (base de données)
+  db:
+    image: postgres:14-alpine
+    container_name: securetrack-db
+    environment:
+      POSTGRES_DB: securetrack
+      POSTGRES_USER: securetrack_user
+      POSTGRES_PASSWORD: securetrack_pass_dev  
+      POSTGRES_PORT: 5432
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persiste les données même si conteneur stop
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U securetrack_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - securetrack-network
+
+  # Service Django (application)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: securetrack-app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    environment:
+      DEBUG: "True"  # ⚠️ False en PROD
+      SECRET_KEY: "your-secret-key-change-in-prod"  # ⚠️ À CHANGER
+      DATABASE_NAME: securetrack
+      DATABASE_USER: securetrack_user
+      DATABASE_PASSWORD: securetrack_pass_dev
+      DATABASE_HOST: db  # Nom du service PostgreSQL
+      DATABASE_PORT: 5432
+    volumes:
+      # Recharge l'app à chaque modification du code
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - securetrack-network
+
+  # Service Nginx (optionnel pour S2, mais utile)
+  nginx:
+    image: nginx:1.24-alpine
+    container_name: securetrack-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    networks:
+      - securetrack-network
+
+volumes:
+  postgres_data:
+
+networks:
+  securetrack-network:
+    driver: bridge

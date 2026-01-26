@@ -28,7 +28,23 @@ SecureTrack est une application de **gestion de tickets** développée avec un *
 
 ## 📋 Structure du projet
 
-SecureTrack/ ├── docs/ │ ├── 01_perimetre.md # Périmètre IN/OUT scope │ ├── 02_threat_model.md # Menaces STRIDE v1 │ ├── 03_dfd_details.md # Data Flow Diagram expliqué │ ├── 04_stack_justification.md # Choix technologiques │ ├── 05_timeline.md # Planning 14 semaines │ ├── 06_user_stories.md # 27 user stories │ └── dfd-v1.png # Diagramme DFD visuel ├── src/ │ └── (code Django sera ici S2+) ├── tests/ │ └── (tests unitaires S3+) ├── docker-compose.yml # Setup local ├── Dockerfile # Image app ├── requirements.txt # Dépendances Python ├── .gitignore # Fichiers à ignorer └── README.md # Ce fichier
+SecureTrack/ 
+├── docs/ 
+    │ ├── 01_perimetre.md # Périmètre IN/OUT scope 
+    │ ├── 02_threat_model.md # Menaces STRIDE v1 
+    │ ├── 03_dfd_details.md # Data Flow Diagram expliqué 
+    │ ├── 04_stack_justification.md # Choix technologiques 
+    │ ├── 05_timeline.md # Planning 14 semaines 
+    │ ├── 06_user_stories.md # 27 user stories 
+    │ └── dfd-v1.png # Diagramme DFD visuel 
+├── src/ 
+    │ └── (code Django sera ici S2+)
+├── tests/ │ └── (tests unitaires S3+) 
+├── docker-compose.yml # Setup local 
+├── Dockerfile # Image app 
+├── requirements.txt # Dépendances Python 
+├── .gitignore # Fichiers à ignorer 
+└── README.md # Ce fichier
 
 🔐 Fonctionnalités de sécurité
 ✅ Authentification robuste : Argon2id + 2FA TOTP + codes de secours
@@ -67,7 +83,8 @@ Voir le rapport final pour détails.
 📄 /docs/03_dfd_details.md : Flux de données détaillés
 📄 /docs/04_stack_justification.md : Justification des technos
 📄 /docs/05_timeline.md : Planning + jalons
-📄 /docs/06_user_stories.md : 27 user stories avec tests
+📄 /docs/06_user_stories.md : 27 user stories avec 
+
 🔄 Processus de développement
 Créer une branche : git checkout -b feature/US-XXX
 Développer avec tests

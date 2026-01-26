@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Manage Members - {{ project.name }} - SecureTrack{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="mb-0"><i class="fas fa-users"></i> Manage Members - {{ project.name }}</h3>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{% url 'tickets:project_detail' project.id %}" class="btn btn-light btn-sm">
+                                <i class="fas fa-arrow-left"></i> Back to Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Messages d'alerte -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <strong>
+                                    {% if message.tags == 'success' %}
+                                        <i class="fas fa-check-circle"></i> Success
+                                    {% elif message.tags == 'error' %}
+                                        <i class="fas fa-exclamation-circle"></i> Error
+                                    {% elif message.tags == 'warning' %}
+                                        <i class="fas fa-warning"></i> Warning
+                                    {% else %}
+                                        <i class="fas fa-info-circle"></i> Info
+                                    {% endif %}
+                                </strong>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Current Members Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-list"></i> Current Members ({{ project.members.count }})</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if project.members.all %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for member in project.members.all %}
+                                                <tr>
+                                                    <td>
+                                                        <strong>{{ member.username }}</strong>
+                                                        {% if project.created_by == member %}
+                                                            <span class="badge bg-warning text-dark ms-2">
+                                                                <i class="fas fa-crown"></i> Owner
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ member.email }}</td>
+                                                    <td>
+                                                        {% if project.created_by == member %}
+                                                            <!-- Owner: afficher ADMIN fixe -->
+                                                            <span class="badge bg-info text-white">
+                                                                <i class="fas fa-shield-alt"></i> ADMIN (Owner)
+                                                            </span>
+                                                        {% else %}
+                                                            <!-- Autres membres: dropdown pour changer le rôle -->
+                                                            <form method="POST" action="{% url 'tickets:update_member_role' project.id member.id %}" style="display: inline;">
+                                                                {% csrf_token %}
+                                                                <select name="role" class="form-select form-select-sm" onchange="this.form.submit();" style="width: auto; display: inline-block; min-width: 120px;">
+                                                                    {% with current_role=member_roles|get_item:member.id|default:"USER" %}
+                                                                        <option value="USER" {% if current_role == 'USER' %}selected{% endif %}>
+                                                                            <i class="fas fa-user"></i> USER
+                                                                        </option>
+                                                                        <option value="MANAGER" {% if current_role == 'MANAGER' %}selected{% endif %}>
+                                                                            <i class="fas fa-tasks"></i> MANAGER
+                                                                        </option>
+                                                                        <option value="ADMIN" {% if current_role == 'ADMIN' %}selected{% endif %}>
+                                                                            <i class="fas fa-shield-alt"></i> ADMIN
+                                                                        </option>
+                                                                    {% endwith %}
+                                                                </select>
+                                                            </form>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if project.created_by != member %}
+                                                            <!-- Bouton Remove (pour les non-owners) -->
+                                                            <form method="POST" action="{% url 'tickets:remove_member' project.id member.id %}" style="display: inline;">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove {{ member.username }} from this project?');">
+                                                                    <i class="fas fa-trash"></i> Remove
+                                                                </button>
+                                                            </form>
+                                                        {% else %}
+                                                            <!-- Owner: pas d'action possible -->
+                                                            <span class="badge bg-secondary">No actions</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-info-circle"></i> No members added yet. Use the form below to add members.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Add New Member Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="fas fa-user-plus"></i> Add New Member</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if available_users %}
+                                <form method="post" action="{% url 'tickets:add_member' project.id %}" novalidate>
+                                    {% csrf_token %}
+                                    <div class="row g-3">
+                                        <div class="col-md-5">
+                                            <label for="user_id" class="form-label">Select User</label>
+                                            <select name="user_id" id="user_id" class="form-select" required>
+                                                <option value="">-- Choose a user --</option>
+                                                {% for user in available_users %}
+                                                    <option value="{{ user.id }}">
+                                                        {{ user.username }} ({{ user.email }})
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="role" class="form-label">Role</label>
+                                            <select name="role" id="role" class="form-select" required>
+                                                <option value="USER">USER</option>
+                                                <option value="MANAGER">MANAGER</option>
+                                                <option value="ADMIN">ADMIN</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 d-flex align-items-end">
+                                            <button type="submit" class="btn btn-success w-100">
+                                                <i class="fas fa-user-plus"></i> Add Member
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <div class="alert alert-warning" role="alert">
+                                    <i class="fas fa-exclamation-triangle"></i> All users are already members of this project.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Role Permissions Table -->
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-lock"></i> Role Permissions Matrix</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th><strong>Permission</strong></th>
+                                            <th class="text-center"><strong>USER</strong></th>
+                                            <th class="text-center"><strong>MANAGER</strong></th>
+                                            <th class="text-center"><strong>ADMIN</strong></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><i class="fas fa-eye"></i> View Tickets</td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fas fa-plus"></i> Create Tickets</td>
+                                            <td class="text-center"><span class="badge bg-danger"><i class="fas fa-times"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fas fa-edit"></i> Edit Own Tickets</td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fas fa-edit"></i> Edit Any Ticket</td>
+                                            <td class="text-center"><span class="badge bg-danger"><i class="fas fa-times"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fas fa-trash"></i> Delete Tickets</td>
+                                            <td class="text-center"><span class="badge bg-danger"><i class="fas fa-times"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-danger"><i class="fas fa-times"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fas fa-users-cog"></i> Manage Members</td>
+                                            <td class="text-center"><span class="badge bg-danger"><i class="fas fa-times"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-danger"><i class="fas fa-times"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fas fa-trash-alt"></i> Delete Project</td>
+                                            <td class="text-center"><span class="badge bg-danger"><i class="fas fa-times"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-danger"><i class="fas fa-times"></i></span></td>
+                                            <td class="text-center"><span class="badge bg-success"><i class="fas fa-check"></i></span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-select-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .badge {
+        padding: 0.5rem 0.75rem;
+    }
+</style>
+{% endblock %}

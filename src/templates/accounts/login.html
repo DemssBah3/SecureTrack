@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - SecureTrack{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="card-header">
+            <h3><i class="fas fa-sign-in-alt"></i> Login</h3>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required>
+                <small class="form-text text-muted">We'll never share your email.</small>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary w-100 mb-3">
+                <i class="fas fa-lock-open"></i> Login
+            </button>
+        </form>
+
+        <!-- 2FA Verification (if needed) -->
+        {% if pending_2fa %}
+        <div class="alert alert-info">
+            <strong>2FA Required!</strong> Enter your authenticator code below.
+        </div>
+        <form method="post" action="{% url 'accounts:verify_totp_login' %}" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="totp_code" class="form-label">Authenticator Code</label>
+                <input type="text" class="form-control" id="totp_code" name="totp_code" placeholder="000000" maxlength="6" required>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Verify 2FA</button>
+        </form>
+        {% endif %}
+
+        <!-- Links -->
+        <hr>
+        <p class="text-center mb-0">
+            Don't have an account? <a href="{% url 'accounts:signup' %}">Sign up here</a>
+        </p>
+        <p class="text-center">
+            <small><a href="#">Forgot password?</a></small>
+        </p>
+    </div>
+</div>
+{% endblock %}

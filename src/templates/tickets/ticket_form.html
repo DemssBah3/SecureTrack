@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if ticket %}Edit Ticket{% else %}Create Ticket{% endif %} - SecureTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-ticket-alt"></i>
+                        {% if ticket %}Edit Ticket{% else %}Create New Ticket{% endif %}
+                    </h3>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ ticket.title|default:'' }}" required>
+                            <small class="form-text text-muted">Brief description of the ticket.</small>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" required>{{ ticket.description|default:'' }}</textarea>
+                            <small class="form-text text-muted">Detailed description of the issue or task.</small>
+                        </div>
+
+                        <!-- Project -->
+                        <div class="mb-3">
+                            <label for="project" class="form-label">Project</label>
+                            <select class="form-select" id="project" name="project" required>
+                                <option value="">-- Select a project --</option>
+                                {% for project in projects %}
+                                    <option value="{{ project.id }}" {% if ticket.project.id == project.id %}selected{% endif %}>
+                                        {{ project.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="OPEN" {% if ticket.status == 'OPEN' %}selected{% endif %}>Open</option>
+                                <option value="IN_PROGRESS" {% if ticket.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                                <option value="CLOSED" {% if ticket.status == 'CLOSED' %}selected{% endif %}>Closed</option>
+                            </select>
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="mb-3">
+                            <label for="priority" class="form-label">Priority</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="LOW" {% if ticket.priority == 'LOW' %}selected{% endif %}>Low</option>
+                                <option value="MEDIUM" {% if ticket.priority == 'MEDIUM' %}selected{% endif %}>Medium</option>
+                                <option value="HIGH" {% if ticket.priority == 'HIGH' %}selected{% endif %}>High</option>
+                            </select>
+                        </div>
+
+                        <!-- Assigned To -->
+                        <div class="mb-3">
+                            <label for="assigned_to" class="form-label">Assign To</label>
+                            <select class="form-select" id="assigned_to" name="assigned_to">
+                                <option value="">-- Unassigned --</option>
+                                {% for user in team_members %}
+                                    <option value="{{ user.id }}" {% if ticket.assigned_to.id == user.id %}selected{% endif %}>
+                                        {{ user.username }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <hr>
+
+                        <!-- Submit Buttons -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-save"></i> {% if ticket %}Update{% else %}Create{% endif %} Ticket
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'tickets:ticket_list' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

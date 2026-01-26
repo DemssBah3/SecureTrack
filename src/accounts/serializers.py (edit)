@@ -1,0 +1,18 @@
+class SignupSerializer:
+    def __init__(self, data):
+        self.data = data
+        self.errors = {}
+
+    def is_valid(self):
+        if 'password' in self.data and len(self.data['password']) < 8:
+            self.errors['password'] = 'Password is too weak.'
+            return False
+        return True
+
+    def save(self):
+        if self.is_valid():
+            return True
+        return False
+
+    def get_errors(self):
+        return self.errors

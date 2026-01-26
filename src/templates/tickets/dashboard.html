@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - SecureTrack{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1><i class="fas fa-chart-line"></i> Welcome, {{ user.username }}!</h1>
+                <p class="mb-0">Here's what's happening with your tickets today.</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="{% url 'tickets:ticket_create' %}" class="btn btn-light">
+                    <i class="fas fa-plus"></i> New Ticket
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mt-4 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ open_tickets_count }}</div>
+                <div class="stat-label">Open Tickets</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ in_progress_tickets_count }}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ closed_tickets_count }}</div>
+                <div class="stat-label">Closed</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-number">{{ assigned_to_me_count }}</div>
+                <div class="stat-label">Assigned to Me</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-history"></i> Recent Tickets</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_tickets %}
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Project</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Created</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticket in recent_tickets %}
+                                    <tr>
+                                        <td>{{ ticket.title }}</td>
+                                        <td><strong>{{ ticket.project.name }}</strong></td>
+                                        <td>
+                                            {% if ticket.status == 'OPEN' %}
+                                                <span class="badge bg-primary">Open</span>
+                                            {% elif ticket.status == 'IN_PROGRESS' %}
+                                                <span class="badge bg-warning">In Progress</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Closed</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if ticket.priority == 'HIGH' %}
+                                                <span class="badge bg-danger">High</span>
+                                            {% elif ticket.priority == 'MEDIUM' %}
+                                                <span class="badge bg-warning">Medium</span>
+                                            {% else %}
+                                                <span class="badge bg-info">Low</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small>{{ ticket.created_at|date:"Y-m-d" }}</small></td>
+                                        <td>
+                                            <a href="{% url 'tickets:ticket_detail' ticket.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No tickets yet. <a href="{% url 'tickets:ticket_create' %}">Create one!</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-folder"></i> My Projects</h5>
+                </div>
+                <div class="card-body">
+                    {% if projects %}
+                        <ul class="list-group">
+                            {% for project in projects %}
+                                <li class="list-group-item">
+                                    <a href="{% url 'tickets:project_detail' project.id %}">{{ project.name }}</a>
+                                    <br>
+                                    <small class="text-muted">{{ project.tickets_count }} tickets</small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No projects yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'tickets:ticket_create' %}" class="btn btn-primary btn-sm w-100 mb-2">
+                        <i class="fas fa-plus"></i> New Ticket
+                    </a>
+                    <a href="{% url 'tickets:project_create' %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                        <i class="fas fa-folder-plus"></i> New Project
+                    </a>
+                    <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="fas fa-user-cog"></i> Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

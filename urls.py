@@ -7,5 +7,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('core.urls')),       # Health check
-    path('auth/', include('auth.urls')),      # Authentication
+    path('auth/', include('accounts.urls')),      # Authentication
 ]
