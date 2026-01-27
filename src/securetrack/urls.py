@@ -7,13 +7,13 @@ from core import views as core_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', core_views.index, name='index'),
-    
+
     # ✅ Auth routes: /auth/signup/, /auth/login/, etc.
     path('auth/', include('accounts.urls', namespace='accounts')),
-    
+
     # ✅ Core routes: /api/, /api/health/
     path('api/', include('core.urls', namespace='core')),
-    
+
     # ✅ Tickets routes: /api/tickets/...
     path('api/tickets/', include('tickets.urls', namespace='tickets')),
 ]

@@ -1,0 +1,31 @@
+[flake8]
+max-line-length = 120
+exclude = 
+    venv,
+    .venv,
+    migrations,
+    __pycache__,
+    .pytest_cache,
+    htmlcov,
+    .git,
+    .github,
+    build,
+    dist,
+    docs,
+    node_modules,
+    src/securetrack/settings.py
+
+ignore = 
+    E203,
+    W503,
+    E501,
+    E701
+
+per-file-ignores =
+    __init__.py:F401
+    src/securetrack/settings.py:E501
+    */migrations/*:E501,F401
+
+max-complexity = 10
+count = True
+statistics = True

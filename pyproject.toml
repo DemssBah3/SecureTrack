@@ -1,0 +1,46 @@
+[tool.black]
+line-length = 120
+target-version = ['py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  venv
+  | .venv
+  | migrations
+  | __pycache__
+  | .pytest_cache
+  | htmlcov
+  | .git
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ["venv", ".venv", "migrations", "__pycache__", ".pytest_cache"]
+known_django = "django"
+known_first_party = ["accounts", "auth", "core", "tickets", "securetrack"]
+src_paths = ["src"]
+sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+
+[tool.pylint.messages_control]
+disable = [
+    "C0111",
+    "W0212",
+    "C0103",
+    "R0913",
+    "C0302",
+]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.design]
+max-attributes = 7
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "securetrack.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+testpaths = ["src"]
+addopts = "--cov=src/accounts,src/tickets --cov-report=html --cov-report=term-missing"
