@@ -1,54 +1,39 @@
-# Django framework
+# Django & REST
 Django==4.2.8
-Gunicorn==21.2.0
-
-# Database
-#psycopg2-binary==2.9.9
-
-# Authentification et sécurité
-argon2-cffi==23.1.0
-pyotp==2.9.0
-django-cors-headers==4.3.1
-
-# Tests
-pytest==7.4.3
-pytest-django==4.7.0
-pytest-cov==4.1.0
-
-# Sécurité (SAST)
-bandit==1.7.5
-#safety==2.3.5
-
-# Lint et formatage
-flake8==6.1.0
-black==23.12.1
-isort==5.13.2
-
-# Environnement
-python-dotenv==1.0.0
-
-# Utils
-requests==2.31.0
-
-# Core Django
-
 djangorestframework==3.14.0
-
-pytz==2023.3
+django-cors-headers==4.3.1
+django-redis==5.4.0
 
 # Database
-psycopg2-binary==2.9.6
+psycopg2-binary==2.9.9
+sqlparse==0.4.4
 
 # Authentication & Security
+python-decouple==3.8
+pyotp==2.9.0
+qrcode==7.4.2
+Pillow==10.1.0
+argon2-cffi==23.2.0
+django-csp==3.7
+django-ratelimit==4.1.0
 
+# Production
+gunicorn==21.2.0
+whitenoise==6.6.0
+sentry-sdk==1.39.2
+python-json-logger==2.0.7
 
-pyqrcode==1.2.1
-django-csp==3.7  # ✅ NOUVEAU - Content Security Policy
+# Testing
+pytest==9.0.2
+pytest-django==4.7.0
+pytest-cov==4.1.0
+factory-boy==3.3.0
+faker==20.1.0
 
-# Rate Limiting & Throttling
-django-ratelimit==4.1.0  # ✅ NOUVEAU - Rate limiting
-
-
-# Security Scanning
-safety==3.0.1
-pip-audit==2.6.1
+# Code Quality
+black==26.1.0
+flake8==6.1.0
+isort==7.0.0
+pylint==4.0.4
+bandit==1.7.5
+safety==2.3.5
