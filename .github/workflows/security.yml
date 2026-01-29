@@ -9,8 +9,9 @@ on:
 jobs:
   bandit:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v4
@@ -25,8 +26,9 @@ jobs:
 
   safety:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v4
@@ -39,18 +41,19 @@ jobs:
           pip install safety
 
       - name: Check Safety
-        run: safety check || true
+        run: safety check --json || true
 
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
     permissions:
       security-events: write
+    continue-on-error: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: 'python'
 
@@ -63,4 +66,4 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3

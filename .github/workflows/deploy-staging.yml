@@ -8,19 +8,14 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.STAGING_DEPLOY_KEY }}" > ~/.ssh/id_rsa 2>/dev/null || true
-          chmod 600 ~/.ssh/id_rsa 2>/dev/null || true
-          ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
-
-      - name: Health Check
+      - name: Deployment Ready
         run: |
           echo "✅ Deployment workflow ready"
-          echo "Configure STAGING_HOST, STAGING_USER, STAGING_DEPLOY_KEY in GitHub Secrets to enable deployment"
+          echo "Configure secrets to enable staging deployment:"
+          echo "  - STAGING_HOST"
+          echo "  - STAGING_USER"
+          echo "  - STAGING_DEPLOY_KEY"
