@@ -1,66 +1,67 @@
-# Stage 1: Builder
-FROM python:3.11-slim as builder
+# ============ Stage 1: Builder ============
+FROM python:3.12-slim as builder
 
 WORKDIR /app
 
-# Installer les dépendances de build
+# Installer les dépendances système nécessaires pour build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copier requirements
+# Copier requirements et installer Python packages
 COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
 
-# Créer virtualenv en stage builder
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r requirements.txt
+# ============ Stage 2: Runtime ============
+FROM python:3.12-slim
 
-# Stage 2: Runtime
-FROM python:3.11-slim
+WORKDIR /app
 
-# Metadata labels (SBOM)
-LABEL org.opencontainers.image.title="SecureTrack"
-LABEL org.opencontainers.image.version="1.0.0"
-LABEL org.opencontainers.image.vendor="SecureTrack"
-LABEL org.opencontainers.image.licenses="MIT"
+# Installer seulement les dépendances runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Créer utilisateur non-root
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-WORKDIR /app
-
-# Installer runtime deps seulement
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copier venv du builder
-COPY --from=builder /opt/venv /opt/venv
+# Copier Python packages depuis builder
+COPY --from=builder /root/.local /home/appuser/.local
 
 # Copier code application
-COPY . .
+COPY src /app/src
 
-# Fixer permissions
-RUN chown -R appuser:appuser /app
+# Créer répertoires nécessaires
+RUN mkdir -p /app/logs /app/staticfiles /app/media && \
+    chown -R appuser:appuser /app
 
-# Définir user non-root
-USER appuser
-
-# Définir PATH
-ENV PATH="/opt/venv/bin:$PATH" \
+# Définir variables d'environnement
+ENV PATH=/home/appuser/.local/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    DEBUG=False
+    PYTHONPATH=/app/src
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health/ || exit 1
-
-# Port d'écoute
+# Exposer port
 EXPOSE 8000
 
-# CMD: gunicorn (au lieu de runserver)
-CMD ["gunicorn", "securetrack.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "60"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/api/health/ || exit 1
+
+# Utiliser utilisateur non-root
+USER appuser
+
+# Démarrer application
+CMD ["gunicorn", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "4", \
+     "--worker-class", "sync", \
+     "--worker-tmp-dir", "/dev/shm", \
+     "--max-requests", "1000", \
+     "--max-requests-jitter", "100", \
+     "--timeout", "60", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
+     "securetrack.wsgi:application"]
